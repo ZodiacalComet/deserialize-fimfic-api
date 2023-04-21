@@ -4,7 +4,7 @@ Deserialization for the JSON responses of the [Fimfiction][fimfiction] story API
 (`https://www.fimfiction.net/api/story.php?story={ID}`).
 
 ```rust
-let story: Story = fimfiction_api::from_str(&response)?.into();
+let story: Story = fimfiction_api::from_str(&response)?;
 ```
 
 # License

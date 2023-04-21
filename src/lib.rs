@@ -4,7 +4,7 @@
 //! ```no_run
 //! # use fimfiction_api::Story;
 //! # let response = String::new();
-//! let story: Story = fimfiction_api::from_str(&response)?.into();
+//! let story: Story = fimfiction_api::from_str(&response)?;
 //! # Ok::<(), serde_json::Error>(())
 //! ```
 //!
@@ -110,20 +110,13 @@ pub struct Story {
     pub chapters: Vec<Chapter>,
 }
 
-/// Meant to be used for deserialization of the response given by the Fimfiction story API.
-#[derive(Deserialize, Debug)]
-pub struct FimfictionResponse {
+#[derive(Deserialize)]
+struct FimfictionResponse {
     /// Story data.
     pub story: Story,
 }
 
-impl From<FimfictionResponse> for Story {
-    fn from(response: FimfictionResponse) -> Self {
-        response.story
-    }
-}
-
-/// Deserialize an instance of [`FimfictionResponse`] from a string of JSON text.
-pub fn from_str(input: &str) -> Result<FimfictionResponse, serde_json::Error> {
-    serde_json::from_str(input)
+/// Deserialize an instance of [`Story`] from a string of JSON text.
+pub fn from_str(input: &str) -> Result<Story, serde_json::Error> {
+    serde_json::from_str::<FimfictionResponse>(input).map(|response| response.story)
 }
