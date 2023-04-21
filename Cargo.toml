@@ -2,7 +2,7 @@
 name = "fimfiction-api"
 version = "0.1.0"
 authors = ["ZodiacalComet <ZodiacalComet@gmail.com>"]
-description = "Deserialization of the Fimfiction story API."
+description = "Deserialization for the JSON responses of the Fimfiction story API"
 license = "Unlicense"
 edition = "2021"
 

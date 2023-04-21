@@ -1,11 +1,18 @@
-//! Deserialization of the Fimfiction story API.
+//! Deserialization for the JSON responses of the [Fimfiction][fimfiction] story API
+//! (`https://www.fimfiction.net/api/story.php?story={ID}`).
 //!
-//! The JSON string to be deserialized should come from a request to
-//! `https://www.fimfiction.net/api/story.php?story={ID}`.
+//! ```no_run
+//! # use fimfiction_api::Story;
+//! # let response = String::new();
+//! let story: Story = fimfiction_api::from_str(&response)?.into();
+//! # Ok::<(), serde_json::Error>(())
+//! ```
 //!
 //! # The `chrono` feature
 //!
 //! Changes all date fields to use `DateTime<Utc>` instead of an `i64`.
+//!
+//! [fimfiction]: https://www.fimfiction.net/
 #[cfg(feature = "chrono")]
 use chrono::{offset::Utc, serde::ts_seconds::deserialize as deserialize_date, DateTime};
 use serde::Deserialize;
