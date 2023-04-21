@@ -6,8 +6,6 @@
 //! # The `chrono` feature
 //!
 //! Changes all date fields to use `DateTime<Utc>` instead of an `i64`.
-use std::convert::TryFrom;
-
 #[cfg(feature = "chrono")]
 use chrono::{offset::Utc, serde::ts_seconds::deserialize as deserialize_date, DateTime};
 use serde::Deserialize;
@@ -118,16 +116,7 @@ impl From<FimfictionResponse> for Story {
     }
 }
 
-impl TryFrom<&str> for FimfictionResponse {
-    type Error = serde_json::Error;
-    fn try_from(content: &str) -> Result<Self, Self::Error> {
-        serde_json::from_str(content)
-    }
-}
-
-impl TryFrom<String> for FimfictionResponse {
-    type Error = serde_json::Error;
-    fn try_from(content: String) -> Result<Self, Self::Error> {
-        FimfictionResponse::try_from(content.as_str())
-    }
+/// Deserialize an instance of [`FimfictionResponse`] from a string of JSON text.
+pub fn from_str(input: &str) -> Result<FimfictionResponse, serde_json::Error> {
+    serde_json::from_str(input)
 }
