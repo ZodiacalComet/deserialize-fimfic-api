@@ -1,5 +1,8 @@
 //! Deserialization of the Fimfiction story API.
 //!
+//! The JSON string to be deserialized should come from a request to
+//! `https://www.fimfiction.net/api/story.php?story={ID}`.
+//!
 //! # The `chrono` feature
 //!
 //! Changes all date fields to use `DateTime<Utc>` instead of an `i64`.
