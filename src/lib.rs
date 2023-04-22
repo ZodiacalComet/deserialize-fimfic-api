@@ -111,12 +111,18 @@ pub struct Story {
     pub chapters: Vec<Chapter>,
 }
 
+/// Represents errors that can occur while deserializing a [`Story`].
 #[derive(Debug, Error)]
 pub enum StoryError {
+    /// A deserialization error.
     #[error("Deserialization error: {0}")]
     Json(#[from] serde_json::Error),
+
+    /// Alias for `"Invalid story id"` API error message.
     #[error("API error: Invalid story ID")]
     InvalidId,
+
+    /// An API error message which doesn't have its own variant.
     #[error("API error: {0}")]
     Api(String),
 }
