@@ -128,12 +128,12 @@ enum Response {
 
 /// Deserialize an instance of [`Story`] from a string of JSON text.
 pub fn from_str(input: &str) -> Result<Story, StoryError> {
-    serde_json::from_str::<Response>(input)
-        .map_err(StoryError::from)
-        .and_then(|res| match res {
-            Response::Story(story) => Ok(story),
-            Response::Error(err) => Err(StoryError::Api(err)),
-        })
+    let res = serde_json::from_str::<Response>(input)?;
+
+    match res {
+        Response::Story(story) => Ok(story),
+        Response::Error(err) => Err(StoryError::Api(err)),
+    }
 }
 
 #[cfg(test)]
