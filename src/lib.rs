@@ -111,23 +111,29 @@ pub struct Story {
     pub chapters: Vec<Chapter>,
 }
 
-#[derive(Deserialize)]
-struct FimfictionResponse {
-    /// Story data.
-    pub story: Story,
-}
-
 #[derive(Debug, Error)]
 pub enum StoryError {
     #[error("Deserialization error: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("API error: {0}")]
+    Api(String),
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum Response {
+    Story(Story),
+    Error(String),
 }
 
 /// Deserialize an instance of [`Story`] from a string of JSON text.
 pub fn from_str(input: &str) -> Result<Story, StoryError> {
-    serde_json::from_str::<FimfictionResponse>(input)
-        .map(|response| response.story)
+    serde_json::from_str::<Response>(input)
         .map_err(StoryError::from)
+        .and_then(|res| match res {
+            Response::Story(story) => Ok(story),
+            Response::Error(err) => Err(StoryError::Api(err)),
+        })
 }
 
 #[cfg(test)]
@@ -135,7 +141,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn deserialize_response() {
+    fn deserialize_story_response() {
         let response = r#"{
   "story": {
     "id": 428991,
@@ -486,5 +492,17 @@ mod test {
 }"#;
 
         from_str(response).unwrap();
+    }
+
+    #[test]
+    fn deserialize_error_response() {
+        let response = r#"{
+    "error": "Invalid story id"
+}"#;
+
+        match from_str(response).unwrap_err() {
+            StoryError::Api(msg) => assert_eq!(msg, "Invalid story id"),
+            err => panic!("expected API error, got: {err:?}"),
+        }
     }
 }
