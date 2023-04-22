@@ -8,6 +8,11 @@
 //! # Ok::<(), StoryError>(())
 //! ```
 //!
+//! # Disclaimer
+//!
+//! This small crate is not affiliated not endorsed in any way by [Fimfiction][fimfiction] or its
+//! team. Do not bother them when it doesn't work as intended.
+//!
 //! # The `chrono` feature
 //!
 //! Changes all date fields to use `DateTime<Utc>` instead of an `i64`.
