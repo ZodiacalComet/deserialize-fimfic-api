@@ -115,6 +115,8 @@ pub struct Story {
 pub enum StoryError {
     #[error("Deserialization error: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("API error: Invalid story ID")]
+    InvalidId,
     #[error("API error: {0}")]
     Api(String),
 }
@@ -132,7 +134,10 @@ pub fn from_str(input: &str) -> Result<Story, StoryError> {
 
     match res {
         Response::Story(story) => Ok(story),
-        Response::Error(err) => Err(StoryError::Api(err)),
+        Response::Error(err) => Err(match err.as_str() {
+            "Invalid story id" => StoryError::InvalidId,
+            _ => StoryError::Api(err),
+        }),
     }
 }
 
@@ -495,13 +500,25 @@ mod test {
     }
 
     #[test]
-    fn deserialize_error_response() {
+    fn deserialize_invalid_id_error_response() {
         let response = r#"{
     "error": "Invalid story id"
 }"#;
 
         match from_str(response).unwrap_err() {
-            StoryError::Api(msg) => assert_eq!(msg, "Invalid story id"),
+            StoryError::InvalidId => {}
+            err => panic!("expected invalid ID error, got: {err:?}"),
+        }
+    }
+
+    #[test]
+    fn deserialize_error_response() {
+        let response = r#"{
+    "error": "Some other error message"
+}"#;
+
+        match from_str(response).unwrap_err() {
+            StoryError::Api(msg) => assert_eq!(msg, "Some other error message"),
             err => panic!("expected API error, got: {err:?}"),
         }
     }
