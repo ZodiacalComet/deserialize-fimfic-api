@@ -505,4 +505,13 @@ mod test {
             err => panic!("expected API error, got: {err:?}"),
         }
     }
+
+    #[test]
+    fn deserialization_error() {
+        let response = "{}";
+        match from_str(response).unwrap_err() {
+            StoryError::Json(_) => {}
+            err => panic!("expected a deserialization error, got: {err:?}"),
+        }
+    }
 }
