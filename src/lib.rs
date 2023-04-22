@@ -2,10 +2,10 @@
 //! (`https://www.fimfiction.net/api/story.php?story={ID}`).
 //!
 //! ```no_run
-//! # use fimfiction_api::Story;
+//! # use fimfiction_api::{Story, StoryError};
 //! # let response = String::new();
 //! let story: Story = fimfiction_api::from_str(&response)?;
-//! # Ok::<(), serde_json::Error>(())
+//! # Ok::<(), StoryError>(())
 //! ```
 //!
 //! # The `chrono` feature
@@ -16,6 +16,7 @@
 #[cfg(feature = "chrono")]
 use chrono::{offset::Utc, serde::ts_seconds::deserialize as deserialize_date, DateTime};
 use serde::Deserialize;
+use thiserror::Error;
 
 mod rating;
 mod status;
@@ -116,9 +117,17 @@ struct FimfictionResponse {
     pub story: Story,
 }
 
+#[derive(Debug, Error)]
+pub enum StoryError {
+    #[error("Deserialization error: {0}")]
+    Json(#[from] serde_json::Error),
+}
+
 /// Deserialize an instance of [`Story`] from a string of JSON text.
-pub fn from_str(input: &str) -> Result<Story, serde_json::Error> {
-    serde_json::from_str::<FimfictionResponse>(input).map(|response| response.story)
+pub fn from_str(input: &str) -> Result<Story, StoryError> {
+    serde_json::from_str::<FimfictionResponse>(input)
+        .map(|response| response.story)
+        .map_err(StoryError::from)
 }
 
 #[cfg(test)]
