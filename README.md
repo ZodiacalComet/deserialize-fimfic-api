@@ -11,7 +11,7 @@ let story: Story = fimfiction_api::from_str(&response)?;
 
 This small crate is not affiliated not endorsed in any way by [Fimfiction][fimfiction]
 or its team. Do not bother them when it doesn't work as intended and instead I invite you to
-open an issue in this repository.
+[open an issue][issues].
 
 ## The `date` fields
 
@@ -25,3 +25,5 @@ Distributed under the [Unlicense License](LICENSE).
 
 [fimfiction]: https://www.fimfiction.net/
 [chrono]: https://docs.rs/chrono/0.4/chrono/
+
+[issues]: https://github.com/ZodiacalComet/deserialize-fimfic-api/issues
