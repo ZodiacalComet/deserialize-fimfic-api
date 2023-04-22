@@ -7,7 +7,7 @@ Deserialization for the JSON responses of the [Fimfiction][fimfiction] story API
 let story: Story = fimfiction_api::from_str(&response)?;
 ```
 
-# License
+## License
 
 Distributed under the [Unlicense License](LICENSE).
 
