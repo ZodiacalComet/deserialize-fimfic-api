@@ -113,6 +113,7 @@ pub struct Story {
     #[serde(deserialize_with = "deserialize_vote")]
     pub dislikes: Option<u32>,
     /// Chapters of the story.
+    #[serde(default)]
     pub chapters: Vec<Chapter>,
 }
 
