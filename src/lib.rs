@@ -120,7 +120,7 @@ pub struct Story {
 #[derive(Debug, Error)]
 pub enum StoryError {
     /// A deserialization error.
-    #[error("Deserialization error: {0}")]
+    #[error("json deserialization error: {0}")]
     Json(#[from] serde_json::Error),
 
     /// Alias for `"Invalid story id"` API error message.
