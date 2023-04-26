@@ -133,14 +133,21 @@ pub enum StoryError {
     Api(String),
 }
 
-#[derive(Deserialize)]
+/// Represents the different responses that the Fimfiction story API can return.
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
-enum Response {
+pub enum Response {
+    /// The API returned a [`Story`].
     Story(Story),
+    /// The API returned an error.
     Error(String),
 }
 
-/// Deserialize an instance of [`Story`] from a string of JSON text.
+/// Deserialize an instance of [`Story`] from an API response String.
+///
+/// # Errors
+/// * On a deserialization error (see [`serde_json::from_str()`]).
+/// * The resulting [`Response`] is of the [`Error`](Response::Error) variant.
 pub fn from_str(input: &str) -> Result<Story, StoryError> {
     let res = serde_json::from_str::<Response>(input)?;
 
