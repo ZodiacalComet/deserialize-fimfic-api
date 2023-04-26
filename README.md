@@ -1,7 +1,7 @@
 # fimfiction-api
 
-Deserialization for the JSON responses of the [Fimfiction][fimfiction] story API
-(`https://www.fimfiction.net/api/story.php?story={ID}`).
+A [`serde`][serde] implementation for the JSON responses of the [Fimfiction][fimfiction]
+story API (`https://www.fimfiction.net/api/story.php?story={ID}`).
 
 ```rust
 let story: Story = fimfiction_api::from_str(&response)?;
@@ -24,6 +24,7 @@ crate, in that case you can enable the `chrono` feature to convert them into `Da
 Distributed under the [Unlicense License](LICENSE).
 
 [fimfiction]: https://www.fimfiction.net/
+[serde]: https://docs.rs/serde/1
 [chrono]: https://docs.rs/chrono/0.4/chrono/
 
 [issues]: https://github.com/ZodiacalComet/deserialize-fimfic-api/issues
