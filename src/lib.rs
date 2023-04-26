@@ -32,7 +32,7 @@ pub use status::StoryStatus;
 use vote::deserialize_vote;
 
 /// Container struct of the author response given by the Fimfiction story API.
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 pub struct Author {
     /// Author's ID.
     pub id: u32,
@@ -41,7 +41,7 @@ pub struct Author {
 }
 
 /// Container struct for all chapter response data given by the Fimfiction story API.
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 pub struct Chapter {
     /// Chapter's ID.
     pub id: u32,
@@ -64,7 +64,7 @@ pub struct Chapter {
 }
 
 /// Container struct for all relevant story response data given by the Fimfiction story API.
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 pub struct Story {
     /// Unique story ID.
     pub id: u32,
