@@ -18,6 +18,8 @@
 //! Changes all date fields to use `DateTime<Utc>` instead of an `i64`.
 //!
 //! [fimfiction]: https://www.fimfiction.net/
+#![deny(missing_docs, missing_debug_implementations, dead_code)]
+
 #[cfg(feature = "chrono")]
 use chrono::{offset::Utc, serde::ts_seconds::deserialize as deserialize_date, DateTime};
 use serde::Deserialize;
