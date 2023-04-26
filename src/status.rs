@@ -13,7 +13,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 /// assert_eq!(StoryStatus::Hiatus.to_string(), "On Hiatus");
 /// assert_eq!(StoryStatus::Cancelled.to_string(), "Cancelled");
 /// ```
-#[derive(Clone, Copy, Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum StoryStatus {
     /// A story marked as `Completed`.
     Complete,

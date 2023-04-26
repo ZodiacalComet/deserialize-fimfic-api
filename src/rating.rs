@@ -12,7 +12,7 @@ use serde::{Deserialize, Deserializer};
 /// assert_eq!(StoryRating::Teen.to_string(), "Teen");
 /// assert_eq!(StoryRating::Mature.to_string(), "Mature");
 /// ```
-#[derive(Clone, Copy, Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum StoryRating {
     /// A story rated as for `Everyone`.
     Everyone,
