@@ -49,3 +49,37 @@ where
         None => serializer.serialize_i32(-1),
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::{deserialize as deserialize_vote, serialize as serialize_vote};
+
+    use serde::{Deserialize, Serialize};
+    use serde_json::json;
+
+    #[derive(Deserialize, Serialize)]
+    struct Votes {
+        #[serde(deserialize_with = "deserialize_vote", serialize_with = "serialize_vote")]
+        value: Option<u32>
+    }
+
+    #[test]
+    fn serde_votes() {
+        let value = json!({ "value": 1020 });
+        let votes: Votes = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(votes.value, Some(1020));
+
+        let serialized_value = serde_json::to_value(votes).unwrap();
+        assert_eq!(serialized_value, value)
+    }
+
+    #[test]
+    fn serde_disabled_votes() {
+        let value = json!({ "value": -1 });
+        let votes: Votes = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(votes.value, None);
+
+        let serialized_value = serde_json::to_value(votes).unwrap();
+        assert_eq!(serialized_value, value)
+    }
+}
