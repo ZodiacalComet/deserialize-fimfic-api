@@ -21,8 +21,8 @@
 #![deny(missing_docs, missing_debug_implementations, dead_code)]
 
 #[cfg(feature = "chrono")]
-use chrono::{offset::Utc, serde::ts_seconds::deserialize as deserialize_date, DateTime};
-use serde::Deserialize;
+use chrono::{offset::Utc, DateTime};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 mod rating;
@@ -31,10 +31,9 @@ mod vote;
 
 pub use rating::StoryRating;
 pub use status::StoryStatus;
-use vote::deserialize_vote;
 
 /// Container struct of the author response given by the Fimfiction story API.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Author {
     /// Author's ID.
     pub id: u32,
@@ -43,7 +42,7 @@ pub struct Author {
 }
 
 /// Container struct for all chapter response data given by the Fimfiction story API.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Chapter {
     /// Chapter's ID.
     pub id: u32,
@@ -60,13 +59,13 @@ pub struct Chapter {
     /// Last chapter update timestamp.
     pub date_modified: i64,
     #[cfg(feature = "chrono")]
-    #[serde(deserialize_with = "deserialize_date")]
+    #[serde(with = "chrono::serde::ts_seconds")]
     /// Last chapter update datetime.
     pub date_modified: DateTime<Utc>,
 }
 
 /// Container struct for all relevant story response data given by the Fimfiction story API.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Story {
     /// Unique story ID.
     pub id: u32,
@@ -84,7 +83,7 @@ pub struct Story {
     /// Last story update timestamp.
     pub date_modified: i64,
     #[cfg(feature = "chrono")]
-    #[serde(deserialize_with = "deserialize_date")]
+    #[serde(with = "chrono::serde::ts_seconds")]
     /// Last story update datetime.
     pub date_modified: DateTime<Utc>,
 
@@ -106,13 +105,19 @@ pub struct Story {
     pub author: Author,
     /// Story completion status.
     pub status: StoryStatus,
+    /// Rating of the story as a String.
+    ///
+    /// This is needed to get back the complete original response content from serializing this
+    /// struct.
+    #[serde(with = "rating::serde_text")]
+    content_rating_text: StoryRating,
     /// Rating given to the story.
     pub content_rating: StoryRating,
     /// The amount of likes the story has, if not disabled.
-    #[serde(deserialize_with = "deserialize_vote")]
+    #[serde(with = "vote")]
     pub likes: Option<u32>,
     /// The amount of dislikes the story has, if not disabled.
-    #[serde(deserialize_with = "deserialize_vote")]
+    #[serde(with = "vote")]
     pub dislikes: Option<u32>,
     /// Chapters of the story.
     #[serde(default)]
@@ -136,7 +141,7 @@ pub enum StoryError {
 }
 
 /// Represents the different responses that the Fimfiction story API can return.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Response {
     /// The API returned a [`Story`].
@@ -162,13 +167,21 @@ pub fn from_str(input: &str) -> Result<Story, StoryError> {
     }
 }
 
+/// Serialize a [`Story`] as a Fimfiction story response String.
+///
+/// A convenience function for wrapping `story` into a [`Response`] and getting the string from
+/// [`serde_json::to_string()`].
+pub fn to_string(story: Story) -> Result<String, serde_json::Error> {
+    serde_json::to_string(&Response::Story(story))
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
 
-    #[test]
-    fn deserialize_story_response() {
-        let response = r#"{
+    use serde_json::Value;
+
+    static RESPONSE_SAMPLE: &str = r#"{
   "story": {
     "id": 428991,
     "title": "How the Tantabus Parses Sleep",
@@ -517,7 +530,27 @@ mod test {
   }
 }"#;
 
-        from_str(response).unwrap();
+    #[test]
+    fn deserialize_story_response() {
+        from_str(RESPONSE_SAMPLE).expect("response should be deserialized into a Story");
+    }
+
+    #[test]
+    fn serialize_story_response() {
+        let story =
+            from_str(RESPONSE_SAMPLE).expect("response should be deserialized into a Story");
+        to_string(story).expect("Story should be serializable as a String");
+    }
+
+    #[test]
+    fn serde_reversible() {
+        let value: Value = serde_json::from_str(RESPONSE_SAMPLE).unwrap();
+
+        let story: Story =
+            from_str(RESPONSE_SAMPLE).expect("response should be deserialized into a Story");
+        let serialized_value = serde_json::to_value(Response::Story(story)).unwrap();
+
+        assert_eq!(value, serialized_value);
     }
 
     #[test]

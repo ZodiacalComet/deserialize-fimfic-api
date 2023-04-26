@@ -1,7 +1,7 @@
 use std::fmt;
 
 use serde::de::{self, Unexpected, Visitor};
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// The different ratings a [`Story`](crate::Story) can have.
 ///
@@ -38,6 +38,15 @@ impl fmt::Display for StoryRating {
     }
 }
 
+impl Serialize for StoryRating {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_u8(*self as u8)
+    }
+}
+
 struct RatingVisitor;
 
 impl<'de> Visitor<'de> for RatingVisitor {
@@ -69,13 +78,53 @@ impl<'de> Deserialize<'de> for StoryRating {
     }
 }
 
+pub(crate) mod serde_text {
+    use super::*;
+
+    struct RatingTextVisitor;
+
+    impl<'de> Visitor<'de> for RatingTextVisitor {
+        type Value = StoryRating;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("one \"Everyone\", \"Teen\" or \"Mature\"")
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            match value {
+                "Everyone" => Ok(StoryRating::Everyone),
+                "Teen" => Ok(StoryRating::Teen),
+                "Mature" => Ok(StoryRating::Mature),
+                _ => Err(E::invalid_value(Unexpected::Str(value), &self)),
+            }
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<StoryRating, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_any(RatingTextVisitor)
+    }
+
+    pub fn serialize<S>(rating: &StoryRating, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&rating.to_string())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
 
     use serde_json::json;
 
-    #[derive(Deserialize, Debug)]
+    #[derive(Deserialize, Serialize, Debug)]
     struct Test {
         content_rating: StoryRating,
     }
@@ -89,10 +138,28 @@ mod test {
         };
     }
 
+    macro_rules! assert_serialize {
+        ($variant:ident => $value:expr) => {
+            let test = Test {
+                content_rating: StoryRating::$variant,
+            };
+            let json = serde_json::to_string(&test).expect("couldn't serialize StoryRating");
+            let expect = json!({ "content_rating": $value }).to_string();
+            assert_eq!(json, expect);
+        };
+    }
+
     #[test]
     fn deserialize() {
         assert_deserialize!(0 => Everyone);
         assert_deserialize!(1 => Teen);
         assert_deserialize!(2 => Mature);
+    }
+
+    #[test]
+    fn serialize() {
+        assert_serialize!(Everyone => 0);
+        assert_serialize!(Teen => 1);
+        assert_serialize!(Mature => 2);
     }
 }

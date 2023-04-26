@@ -1,7 +1,7 @@
 use std::{convert::TryInto, fmt};
 
 use serde::de::{self, Unexpected, Visitor};
-use serde::Deserializer;
+use serde::{Deserializer, Serializer};
 
 struct VoteVisitor;
 
@@ -33,9 +33,19 @@ impl<'de> Visitor<'de> for VoteVisitor {
     }
 }
 
-pub fn deserialize_vote<'de, D>(deserializer: D) -> Result<Option<u32>, D::Error>
+pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<u32>, D::Error>
 where
     D: Deserializer<'de>,
 {
     deserializer.deserialize_any(VoteVisitor)
+}
+
+pub fn serialize<S>(vote: &Option<u32>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    match vote {
+        Some(vote) => serializer.serialize_u32(*vote),
+        None => serializer.serialize_i32(-1),
+    }
 }
