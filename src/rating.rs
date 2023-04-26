@@ -133,7 +133,7 @@ mod test {
         ($value:expr => $variant:ident) => {
             let json = json!({ "content_rating": $value });
             let test: Test =
-                serde_json::from_value(json).expect("couldn't deserialize StoryRating");
+                serde_json::from_value(json).expect("StoryRating should be deserializable");
             assert_eq!(test.content_rating, StoryRating::$variant);
         };
     }
@@ -143,7 +143,7 @@ mod test {
             let test = Test {
                 content_rating: StoryRating::$variant,
             };
-            let json = serde_json::to_string(&test).expect("couldn't serialize StoryRating");
+            let json = serde_json::to_string(&test).expect("StoryRating should be serializable");
             let expect = json!({ "content_rating": $value }).to_string();
             assert_eq!(json, expect);
         };
