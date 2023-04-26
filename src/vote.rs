@@ -59,8 +59,11 @@ mod test {
 
     #[derive(Deserialize, Serialize)]
     struct Votes {
-        #[serde(deserialize_with = "deserialize_vote", serialize_with = "serialize_vote")]
-        value: Option<u32>
+        #[serde(
+            deserialize_with = "deserialize_vote",
+            serialize_with = "serialize_vote"
+        )]
+        value: Option<u32>,
     }
 
     #[test]
