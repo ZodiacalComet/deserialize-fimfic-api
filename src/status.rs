@@ -47,7 +47,7 @@ impl Serialize for StoryStatus {
     where
         S: Serializer,
     {
-        serializer.serialize_u8(*self as u8)
+        serializer.serialize_str(&self.to_string())
     }
 }
 
@@ -58,19 +58,6 @@ impl<'de> Visitor<'de> for StatusVisitor {
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("a valid status string or an integer between 0 and 3")
-    }
-
-    fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        match value {
-            0 => Ok(StoryStatus::Complete),
-            1 => Ok(StoryStatus::Incomplete),
-            2 => Ok(StoryStatus::Hiatus),
-            3 => Ok(StoryStatus::Cancelled),
-            _ => Err(E::invalid_value(Unexpected::Unsigned(value), &self)),
-        }
     }
 
     fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
@@ -115,13 +102,12 @@ mod test {
     }
 
     macro_rules! assert_deserialize {
-        ([$($value:expr),+] => $variant:ident) => {
-            $(
-                let json = json!({ "status": $value });
-                let test: Test = serde_json::from_value(json).expect("couldn't deserialize StoryStatus");
-                assert_eq!(test.status, StoryStatus::$variant);
-            )+
-        }
+        ($value:expr => $variant:ident) => {
+            let json = json!({ "status": $value });
+            let test: Test =
+                serde_json::from_value(json).expect("couldn't deserialize StoryStatus");
+            assert_eq!(test.status, StoryStatus::$variant);
+        };
     }
 
     macro_rules! assert_serialize {
@@ -137,17 +123,17 @@ mod test {
 
     #[test]
     fn deserialize() {
-        assert_deserialize!([0, "Complete"] => Complete);
-        assert_deserialize!([1, "Incomplete"] => Incomplete);
-        assert_deserialize!([2, "On Hiatus"] => Hiatus);
-        assert_deserialize!([3, "Cancelled"] => Cancelled);
+        assert_deserialize!("Complete" => Complete);
+        assert_deserialize!("Incomplete" => Incomplete);
+        assert_deserialize!("On Hiatus" => Hiatus);
+        assert_deserialize!("Cancelled" => Cancelled);
     }
 
     #[test]
     fn serialize() {
-        assert_serialize!(Complete => 0);
-        assert_serialize!(Incomplete => 1);
-        assert_serialize!(Hiatus => 2);
-        assert_serialize!(Cancelled => 3);
+        assert_serialize!(Complete => "Complete");
+        assert_serialize!(Incomplete => "Incomplete");
+        assert_serialize!(Hiatus => "On Hiatus");
+        assert_serialize!(Cancelled => "Cancelled");
     }
 }
