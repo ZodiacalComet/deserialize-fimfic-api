@@ -32,11 +32,14 @@ mod vote;
 pub use rating::StoryRating;
 pub use status::StoryStatus;
 
+/// A Fimfiction ID.
+pub type Id = u32;
+
 /// Container struct of the author response given by the Fimfiction story API.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Author {
     /// Author's ID.
-    pub id: u32,
+    pub id: Id,
     /// Username of the author.
     pub name: String,
 }
@@ -45,7 +48,7 @@ pub struct Author {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Chapter {
     /// Chapter's ID.
-    pub id: u32,
+    pub id: Id,
     /// Title of the chapter.
     pub title: String,
     /// The amount of words the chapter has.
@@ -68,7 +71,7 @@ pub struct Chapter {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Story {
     /// Unique story ID.
-    pub id: u32,
+    pub id: Id,
     /// Title of the story.
     pub title: String,
     /// Fimfiction URL to the story.
