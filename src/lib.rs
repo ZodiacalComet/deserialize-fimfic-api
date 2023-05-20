@@ -134,6 +134,10 @@ pub enum StoryError {
     #[error("json deserialization error: {0}")]
     Json(#[from] serde_json::Error),
 
+    /// The story is not public, content is incomplete.
+    #[error("unpublised error: incomplete content")]
+    Unpublished(Story),
+
     /// Alias for `"Invalid story id"` API error message.
     #[error("API error: Invalid story ID")]
     InvalidId,
@@ -158,11 +162,18 @@ pub enum Response {
 /// # Errors
 /// * On a deserialization error (see [`serde_json::from_str()`]).
 /// * The resulting [`Response`] is of the [`Error`](Response::Error) variant.
+/// * The resulting [`Story`] does not have any chapters.
 pub fn from_str(input: &str) -> Result<Story, StoryError> {
     let res = serde_json::from_str::<Response>(input)?;
 
     match res {
-        Response::Story(story) => Ok(story),
+        Response::Story(story) => {
+            if story.chapters.is_empty() && story.chapter_count == 0 {
+                Err(StoryError::Unpublished(story))
+            } else {
+                Ok(story)
+            }
+        }
         Response::Error(err) => Err(match err.as_str() {
             "Invalid story id" => StoryError::InvalidId,
             _ => StoryError::Api(err),
@@ -586,6 +597,39 @@ mod test {
         match from_str(response).unwrap_err() {
             StoryError::Json(_) => {}
             err => panic!("expected a deserialization error, got: {err:?}"),
+        }
+    }
+
+    #[test]
+    fn unpublished_error() {
+        let response = r#"{
+    "story": {
+        "author": {
+            "id": 1,
+            "name": "Author"
+        },
+        "chapter_count": 0,
+        "comments": 0,
+        "content_rating": 0,
+        "content_rating_text": "Everyone",
+        "date_modified": 0,
+        "description": "",
+        "dislikes": -1,
+        "id": 1,
+        "likes": -1,
+        "short_description": "",
+        "status": "Incomplete",
+        "title": "A story",
+        "total_views": 0,
+        "url": "https://www.fimfiction.net/story/1/a-story",
+        "views": 0,
+        "words": 0
+    }
+}"#;
+
+        match from_str(response).unwrap_err() {
+            StoryError::Unpublished(_) => {}
+            err => panic!("expected an unpublished error, got: {err:?}"),
         }
     }
 }
