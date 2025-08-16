@@ -127,16 +127,19 @@ pub struct Story {
     pub chapters: Vec<Chapter>,
 }
 
+impl Story {
+    /// Whether or not the story is not public, content is incomplete.
+    pub fn is_unpublished(&self) -> bool {
+        self.chapters.is_empty() && self.chapter_count == 0
+    }
+}
+
 /// Represents errors that can occur while deserializing a [`Story`].
 #[derive(Debug, Error)]
 pub enum StoryError {
     /// A deserialization error.
     #[error("json deserialization error: {0}")]
     Json(#[from] serde_json::Error),
-
-    /// The story is not public, content is incomplete.
-    #[error("unpublised error: incomplete content")]
-    Unpublished(Story),
 
     /// Alias for `"Invalid story id"` API error message.
     #[error("API error: Invalid story ID")]
@@ -167,13 +170,7 @@ pub fn from_str(input: &str) -> Result<Story, StoryError> {
     let res = serde_json::from_str::<Response>(input)?;
 
     match res {
-        Response::Story(story) => {
-            if story.chapters.is_empty() && story.chapter_count == 0 {
-                Err(StoryError::Unpublished(story))
-            } else {
-                Ok(story)
-            }
-        }
+        Response::Story(story) => Ok(story),
         Response::Error(err) => Err(match err.as_str() {
             "Invalid story id" => StoryError::InvalidId,
             _ => StoryError::Api(err),
@@ -601,7 +598,7 @@ mod test {
     }
 
     #[test]
-    fn unpublished_error() {
+    fn unpublished_story() {
         let response = r#"{
     "story": {
         "author": {
@@ -627,9 +624,8 @@ mod test {
     }
 }"#;
 
-        match from_str(response).unwrap_err() {
-            StoryError::Unpublished(_) => {}
-            err => panic!("expected an unpublished error, got: {err:?}"),
+        if !from_str(response).unwrap().is_unpublished() {
+            panic!("expected story to be unpublised")
         }
     }
 }
