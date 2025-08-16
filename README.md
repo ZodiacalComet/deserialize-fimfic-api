@@ -15,9 +15,9 @@ or its team. Do not bother them when it doesn't work as intended and instead I i
 
 ## The `date` fields
 
-By default, they are `i64` which if you don't need them it saves you having a dependency that you
-wont be using. But if you need to do something with it maybe you would use the [`chrono`][chrono]
-crate, in that case you can enable the `chrono` feature to convert them into `DateTime<Utc>`.
+By default, all dates are `i64` to save a dependency when unnecessary for an specific use case.
+If you are going to handle them with the [`chrono`][chrono] crate, the library provides the
+`chrono` feature to deserialize them as a `DateTime<Utc>`.
 
 ## License
 
