@@ -1,7 +1,6 @@
 use std::fmt;
 
-use serde::de::{self, Unexpected, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 /// The different completion statuses a [`Story`](crate::Story) can have.
 ///
@@ -13,13 +12,14 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 /// assert_eq!(StoryStatus::Hiatus.to_string(), "On Hiatus");
 /// assert_eq!(StoryStatus::Cancelled.to_string(), "Cancelled");
 /// ```
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub enum StoryStatus {
     /// A story marked as `Completed`.
     Complete,
     /// A story marked as `Incomplete`.
     Incomplete,
     /// A story marked as `On Hiatus`.
+    #[serde(rename = "On Hiatus")]
     Hiatus,
     /// A story marked as `Cancelled`.
     Cancelled,
@@ -39,54 +39,6 @@ impl fmt::Display for StoryStatus {
             StoryStatus::Hiatus => write!(f, "On Hiatus"),
             StoryStatus::Cancelled => write!(f, "Cancelled"),
         }
-    }
-}
-
-impl Serialize for StoryStatus {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-
-struct StatusVisitor;
-
-impl<'de> Visitor<'de> for StatusVisitor {
-    type Value = StoryStatus;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("a valid status string")
-    }
-
-    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        match value {
-            "Complete" => Ok(StoryStatus::Complete),
-            "Incomplete" => Ok(StoryStatus::Incomplete),
-            "On Hiatus" => Ok(StoryStatus::Hiatus),
-            "Cancelled" => Ok(StoryStatus::Cancelled),
-            _ => Err(E::invalid_value(Unexpected::Str(value), &self)),
-        }
-    }
-
-    fn visit_borrowed_str<E>(self, value: &'de str) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        self.visit_str(value)
-    }
-}
-
-impl<'de> Deserialize<'de> for StoryStatus {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        deserializer.deserialize_any(StatusVisitor)
     }
 }
 
