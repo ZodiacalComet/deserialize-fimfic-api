@@ -151,6 +151,7 @@ pub enum StoryError {
 }
 
 /// Represents the different responses that the Fimfiction story API can return.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Response {
