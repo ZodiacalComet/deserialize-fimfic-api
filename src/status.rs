@@ -57,7 +57,7 @@ impl<'de> Visitor<'de> for StatusVisitor {
     type Value = StoryStatus;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("a valid status string or an integer between 0 and 3")
+        formatter.write_str("a valid status string")
     }
 
     fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
