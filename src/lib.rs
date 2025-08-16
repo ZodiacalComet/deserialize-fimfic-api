@@ -21,7 +21,7 @@
 #![deny(missing_docs, missing_debug_implementations, dead_code)]
 
 #[cfg(feature = "chrono")]
-use chrono::{offset::Utc, DateTime};
+use chrono::{DateTime, offset::Utc};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
